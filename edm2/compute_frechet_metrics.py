@@ -10,6 +10,7 @@ from tqdm import tqdm
 from torch_utils import distributed as dist
 from frechet_utils import calculate_stats_for_files, calculate_metrics_from_stats, save_stats, load_stats
 from exp_utils import load_data
+from project_config import PROJECT_DIR
 
 
 
@@ -198,7 +199,7 @@ def create_subsets(dataset, n_samples, val_settings, n_subsets):
         freqs = torch.ones(dataset_obj.get_label_dim(), dtype=torch.int) * (n_samples // dataset_obj.get_label_dim())  # 50 images per class, 1000 classes = 50k images
 
         for i in range(n_subsets):
-            subsample_dir = f"{proj_folder}/fd_analysis/{dataset}/{'val' if val else 'train'}/uniform/"
+            subsample_dir = f"{PROJECT_DIR}/fd_analysis/{dataset}/{'val' if val else 'train'}/uniform/"
             subsample_path = os.path.join(subsample_dir, f"subsamples_{n_samples}_{i+1:02d}")
             if os.path.exists(subsample_path):
                 dist.print0(f"Subsample directory {subsample_path} already exists. Skipping...")
@@ -263,10 +264,8 @@ def compute_metrics(paths1, paths2, metrics=['fid', 'fd_dinov2'], wandb_log=None
             # Compute Frechet Distances
             if rank == 0:
                 if use_wandb:
-                    # todo wandb setup
-                    if os.access("/home/tikai103", os.R_OK):
-                        os.environ["WANDB_API_KEY"] = "a9efb3b6cddc090dbf125d4c5d0dff12b178eb36"
-                    wandb.init(project="diffusion_overfit", entity="hhu-mmbs", group=wandb_groupname)
+                    os.environ["WANDB_API_KEY"] = ...
+                    wandb.init(project="diffusion_generalization", entity="hhu-mmbs", group=wandb_groupname)
                     wandb.run.name = wandb_runname
                     wandb.config.update(wandb_log)
 
@@ -299,7 +298,6 @@ if __name__ == "__main__":
     torch.multiprocessing.set_start_method('spawn')
     dist.init()
     rank, world_size = dist.get_rank(), dist.get_world_size()
-    proj_folder = '/home/shared/generative_models/diffusion_overfit_official'  # todo: specify
     metrics = ['fid', 'fd_dinov2']
 
     # Measure FDs from references
@@ -320,8 +318,8 @@ if __name__ == "__main__":
 
                 # Set train and val paths
                 n_valsamples = 50000 if 'in' in dataset else 10000  # 10k for cifar
-                val_paths = [f"{proj_folder}/fd_analysis/{dataset}/val/uniform/subsamples_{n_valsamples}_01/"]  # Just one
-                train_folder = f"{proj_folder}/fd_analysis/{dataset}/train/uniform/"
+                val_paths = [f"{PROJECT_DIR}/fd_analysis/{dataset}/val/uniform/subsamples_{n_valsamples}_01/"]  # Just one
+                train_folder = f"{PROJECT_DIR}/fd_analysis/{dataset}/train/uniform/"
                 n_trainsamples = 50000 if 'in' in dataset else 10000  # 10k for cifar
                 train_paths_arg2 = [os.path.join(train_folder, f"subsamples_{n_trainsamples}_{i+1:02d}/") for i in range(n_trainsets)]
                 if 'cifar' in dataset:
@@ -333,7 +331,7 @@ if __name__ == "__main__":
                 # Set generative paths
                 if 'gen' in mode:
                     gen_paths = []
-                    gen_folder = f"{proj_folder}/fd_analysis/{dataset}/gen/uniform/{model_type}"
+                    gen_folder = f"{PROJECT_DIR}/fd_analysis/{dataset}/gen/uniform/{model_type}"
                     if 'in' in dataset:
                         for model_size in model_sizes:
                             snap_folder = os.path.join(gen_folder, model_size)

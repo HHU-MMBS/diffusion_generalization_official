@@ -1,6 +1,6 @@
 import matplotlib.ticker as ticker
 
-from plot_utils import *
+from plots.plot_utils import *
 
 # dict with sigma_idx for all combinations of models and metrics
 sigma_ids = {
@@ -283,8 +283,6 @@ def loss_decomposition(model, dataset, snaps, title, labels, dist=True, res=True
         ticks = [0.002, 0.005, 0.02, 0.1, 0.5, 1, 2, 5, 10, 20, 50]
         plt.xticks(ticks, [f'$\sigma=${0.002}   ', '', 0.02, 0.1, 0.5, 1, 2, 5, 10, 20, 50])
         
-        # plt.savefig('/home/tikai103/plots/inductive_bias_diffusion/figs/loss_analysis.png', dpi=300)
-        # plt.show()
         # plt.close()
 
 

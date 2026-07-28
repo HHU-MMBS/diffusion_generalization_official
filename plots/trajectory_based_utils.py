@@ -3,7 +3,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import matplotlib.ticker as ticker
 
-from plot_utils import *
+from plots.plot_utils import *
+from project_config import PROJECT_DIR
 
 
 def get_fds(dataset, n_trainruns=15, early_stop=-1, guidance='none'):
@@ -16,7 +17,6 @@ def get_fds(dataset, n_trainruns=15, early_stop=-1, guidance='none'):
     n_trainruns is the expected number of runs for gen-v-train.
     """
     # Get metrics and their snaps
-    # data = pd.read_csv(f"/home/tikai103/plots/inductive_bias_diffusion/data/{model}-{dataset}-none.csv")
 
     fd_data = {}
     if 'in' in dataset:
@@ -26,7 +26,7 @@ def get_fds(dataset, n_trainruns=15, early_stop=-1, guidance='none'):
     for model_size in model_sizes:
         level_2 = {'train': None, 'val': None}
         for mode in ['train', 'val']:
-            data = pd.read_csv(f"/home/shared/generative_models/diffusion_overfit/data/fd_analysis/gen-v-{mode}/{dataset}.csv")
+            data = pd.read_csv(f"{PROJECT_DIR}/data/fd_analysis/gen-v-{mode}/{dataset}.csv")
 
             if 'in' in dataset:
                 model_data_idx = [f"/{model_size}/" in s for s in data['ref_path1']]
@@ -119,9 +119,6 @@ def fd_vs_snaps(fd_data, model_sizes):
 
             # plt.annotate(text='', xy=(anno_x, anno_bot), xytext=(anno_x, anno_top), arrowprops=dict(arrowstyle='<->', color=gg_color))
             # plt.text(anno_x_text, anno_y_text, 'Generalization gap', fontsize=12, color=gg_color)
-
-        #     # plt.savefig(f'/home/tikai103/diffusion_overfit/plots/figs/icml2025/{metric}-vs-Mimg_{dataset}-{model}.png', dpi=200, bbox_inches='tight')
-        #     plt.show()
 
 
 def overfit_vs_snaps(models_data, metric, mode, x_axis='snaps', x_key='snaps', label=None, c=None,

@@ -9,6 +9,7 @@ from generate_images import StackedRandomGenerator
 from frechet_utils import get_detector
 from exp_utils import load_data, load_snaps, load_models
 from torch_utils import distributed as dist
+from project_config import PROJECT_DIR
 
 
 @torch.no_grad()
@@ -184,10 +185,10 @@ def generalization_gap(dataset, snaps, res, model_type, model_size, split='train
 
                 if model_type == 'edm2':
                     snap_nr = snap.split('/')[-1].split('-')[-2]
-                    save_path = f"{proj_folder}/data/rec_based/in{res}/{model_type}-{model_size}{suffix}/{split}_data"
+                    save_path = f"{PROJECT_DIR}/data/rec_based/in{res}/{model_type}-{model_size}{suffix}/{split}_data"
                 elif 'edm' in model_type or ('P_' in model_type) or 'theory' in model_type or 'ours' in model_type:
                     snap_nr = snap.split('/')[-1].split('-')[-1].split('.')[0]
-                    save_path = f"{proj_folder}/data/rec_based/{dataset}/{model_type}{suffix}/{split}_data"
+                    save_path = f"{PROJECT_DIR}/data/rec_based/{dataset}/{model_type}{suffix}/{split}_data"
                 else:
                     raise NotImplementedError(f"Unsupported model type: {model_type}")
 
@@ -221,14 +222,14 @@ def generalization_gap(dataset, snaps, res, model_type, model_size, split='train
                 all_feat_l2 = [torch.zeros(num_steps, 2, dtype=torch.float32, device=device) for _ in range(num_f_extractors)]  # Per-extractor feature reconstruction error
 
                 # To compute references of train/val/gen data for FD computations
-                ref_path = f"{proj_folder}/data/rec_based/{dataset}/{split}_ref_{num_samples}.pt"
+                ref_path = f"{PROJECT_DIR}/data/rec_based/{dataset}/{split}_ref_{num_samples}.pt"
                 compute_ref = (rank == 0 and not os.path.isfile(ref_path))
                 compute_ref = torch.tensor(int(compute_ref), device=device)
                 torch.distributed.broadcast(compute_ref, src=0)
                 compute_ref = bool(compute_ref.item())
 
                 # Before the batch loop, load precomputed decoded images if they exist
-                feats_path = f"{proj_folder}/data/rec_based/{dataset}/feats_{split}_{num_samples}.pt"
+                feats_path = f"{PROJECT_DIR}/data/rec_based/{dataset}/feats_{split}_{num_samples}.pt"
 
                 if not os.path.isfile(feats_path):
                     feats_gt = [torch.zeros(num_samples, f.feature_dim, dtype=torch.float64, device=device) for f in f_extractors]
@@ -479,7 +480,6 @@ if __name__ == "__main__":
     torch.multiprocessing.set_start_method('spawn')
     dist.init()
     rank, world_size = dist.get_rank(), dist.get_world_size()
-    proj_folder = '/home/shared/generative_models/diffusion_overfit_official'  # todo: specify
 
     # EDM sampler setup
     num_steps, rho = 32, 7
@@ -555,8 +555,8 @@ if __name__ == "__main__":
                                        num_samples=50000,  # Paper: 8192
                                        max_batch_size=512 if res != 512 else 256,
                                        encoder_batch_size=256 if res != 512 else 16,
-                                       # custom_img_dir=f"{proj_folder}/fd_analysis/{dataset}/{'val' if val else 'train'}/uniform/subsamples_50000_01/samples",  # custom dataset
-                                       # pseudo_label_path=f"{proj_folder}/fd_analysis/{dataset}/{'val' if val else 'train'}/uniform/subsamples_50000_01/labels.pt",  # pseudo labels
+                                       # custom_img_dir=f"{PROJECT_DIR}/fd_analysis/{dataset}/{'val' if val else 'train'}/uniform/subsamples_50000_01/samples",  # custom dataset
+                                       # pseudo_label_path=f"{PROJECT_DIR}/fd_analysis/{dataset}/{'val' if val else 'train'}/uniform/subsamples_50000_01/labels.pt",  # pseudo labels
                                        save_preds=True,
                                        # sigma_ids=[37, 38, 39, 40],  # Restrict to specific sigma_ids
                                        )

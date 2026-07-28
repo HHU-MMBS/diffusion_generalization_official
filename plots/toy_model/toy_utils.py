@@ -3,43 +3,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 
-from scipy.linalg import sqrtm
+from matplotlib.collections import LineCollection
 from tqdm import tqdm
-from generalization_gap_utils import multiline, plot_layout
 from plots.toy_model.toy_math import ToyModel
 
-
-def plot_traject(trajec_list, t_steps, alpha=None, scale=1, width=0.005):
-    n = len(t_steps) - 2
-
-    # Linear steps from a threshold onwards, from 1 to 0
-    color_steps = np.clip(np.arange(n, 0, -1), 0, n // 2)
-    c_min, c_max = color_steps.min(), color_steps.max()
-    color_steps = (color_steps - c_min) / (c_max - c_min)
-
-    # Linear steps from a threshold onwards, from 0 to 1
-    alpha_steps = np.clip(np.arange(n), n // 2, n)
-    c_min, c_max = alpha_steps.min(), alpha_steps.max()
-    alpha_steps = (alpha_steps - c_min) / (c_max - c_min)
-    for c, trajec in enumerate(trajec_list):
-        plt.quiver(trajec[:-1, 0], trajec[:-1, 1],
-                   trajec[1:, 0] - trajec[:-1, 0],
-                   trajec[1:, 1] - trajec[:-1, 1],
-                   color_steps,
-                   cmap='viridis',
-                   scale_units='xy',
-                   angles='xy',
-                   scale=scale,
-                   width=width,
-                   alpha=alpha_steps if alpha is None else alpha,
-                   headlength=0,
-                   headaxislength=0)
-
-
-def plot_endpoints(data, trajects):
-    for c, trajec in enumerate(trajects):
-        dist = np.power(trajec[-1] - data, 2).sum(axis=1)
-        plt.scatter(trajec[-1, 0], trajec[-1, 1], s=5, c=dist.min() * 10)
 
 
 def setup_plot(window_size, data, data_split, sigma=None, s=10, grid=True):
@@ -70,96 +37,60 @@ def setup_plot(window_size, data, data_split, sigma=None, s=10, grid=True):
     plt.tick_params(left=False, right=False, labelleft=False, labelbottom=False, bottom=False)
 
 
-def plot_row(n, m, i, trajects, preds, ylabel, titles, window_size, data, data_split, t_steps):
-    """
-    Args:
-        n: Number of trajectories
-        m: Number of trajectories to plot
-        i: Row index
-        trajects: Trajectories x(t), [n, n_steps, 2]
-        preds: Predictions y(t), [n, n_steps, 2]
-        t_steps: Noise levels
-    """
-    rows = 4
-    columns = 3
+def multiline(xs, ys, c, idx=None, ax=None, **kwargs):
+    """Plot lines with different colorings
 
-    # Trajectories
-    plt.subplot(rows, columns, columns * i + 1)
-    if ylabel is not None:
-        plt.ylabel(ylabel, fontsize=14)
-    if titles:
-        plt.title('$x(t)$')
+    Parameters
+    ----------
+    xs : iterable container of x coordinates
+    ys : iterable container of y coordinates
+    c : iterable container of numbers mapped to colormap
+    idx: optional, select a subset of data to plot
+    ax (optional): Axes to plot on.
+    kwargs (optional): passed to LineCollection
 
-    plot_traject(trajects[::n // m], t_steps)
-    setup_plot(window_size, data, data_split, s=window_size * 4)
+    Notes:
+        len(xs) == len(ys) == len(c) is the number of line segments
+        len(xs[i]) == len(ys[i]) is the number of points for each line (indexed by i)
 
-    # Predictions
-    plt.subplot(rows, columns, columns * i + 2)
-    plot_traject(preds[::n // m], t_steps)
-    setup_plot(window_size, data, data_split, s=window_size * 4)
-    if titles:
-        plt.title('$y(t)$')
-
-    # Endpoints
-    plt.subplot(rows, columns, columns * i + 3)
-    plot_endpoints(data, trajects)
-    setup_plot(window_size, data, data_split, s=window_size * 4)
-    if titles:
-        plt.title('$x(0)$')
-
-    total_error = (((trajects[None, :, -1] - data[:, None]) ** 2).min(axis=0).sum(axis=-1) ** 0.5).mean()
-    plt.xlabel(f"{total_error:.1e}")
-
-    return total_error
-
-
-def simulate_trajectories(model, x_labels, n, m, init, delta, data, data_split, window_size, full_row=False, save_as=None):
-    """
-    Args:
-        model: ToyModel instance to use for sampling
-        x_labels: Array of labels for each trajectory, shape (n,)
-        n: Number of trajectories
-        m: Number of trajectories to plot
-        interval: Interval where the guidance weight is used
-        save_as: Path to save the plot in
+    Returns
+    -------
+    lc : LineCollection instance.
     """
 
-    total_error = []
+    if idx is not None:
+        xs = xs[idx]
+        ys = ys[idx]
+        c = c[idx]
 
-    if full_row:
-        plt.figure(figsize=(9, 12), facecolor='white')
-        plt.subplots_adjust(wspace=0, hspace=0)
-    else:
-        plt.figure(figsize=(4,4), facecolor='white')
+    # find axes
+    ax = plt.gca() if ax is None else ax
 
-    model_kwargs = {'x_labels': x_labels, 'n': n, 'init': init}
-    trajects, preds = model.run(**model_kwargs)
+    # create LineCollection
+    segments = [np.column_stack([x, y]) for x, y in zip(xs, ys)]
+    lc = LineCollection(segments, **kwargs)
 
-    if full_row:
-        counter = 0  # Row counter
-        plot_labels = [f'$\\epsilon_{{{delta}}}(x, t)$',]
-        for plot_label in plot_labels:
-            total_error.append(plot_row(n=n,              # Number of trajectories
-                                        m=m,              # Number of trajectories to plot
-                                        i=counter,        # Row index
-                                        trajects=trajects,
-                                        preds=preds,
-                                        ylabel=plot_label,          # ylabels
-                                        titles=True,
-                                        window_size=window_size,    # Window size
-                                        data=data,     # Data
-                                        data_split=data_split,
-                                        t_steps=model.t_steps)) # Noise levels
-            counter += 1
-    else:
-        # Trajectories
-        plot_traject(trajects[::n // m], model.t_steps)
-        setup_plot(window_size, data, data_split, s=window_size * 20)
+    # set coloring of line segments
+    #    Note: I get an error if I pass c as a list here... not sure why.
+    lc.set_array(np.asarray(c))
+
+    # add lines to axes and rescale
+    #    Note: adding a collection doesn't autoscalee xlim/ylim
+    ax.add_collection(lc)
+    ax.autoscale()
+    return lc
+
+
+def plot_layout(sigma_min, sigma_max, scale_y=True, legend=True):
+    plt.grid(alpha=0.4)
+    plt.xscale('log')
+    plt.xlim(left=sigma_min, right=sigma_max)
+    if legend:
         plt.legend(loc=1)
-
-    if save_as is not None:
-        plt.savefig(save_as, dpi=150, bbox_inches='tight')
-    plt.show()
+    if scale_y:
+        plt.ylim(bottom=0, top=1.1)
+        plt.yticks([0, 0.2, 0.4, 0.6, 0.8, 1])
+        plt.tick_params(left=False)
 
 
 def l2_metric(model, delta, data, data_split, t_steps, guid_weight=0.0, delta_neg=None, samples_per_point=100, x_labels=None, cond=False, window_size=2.5,
@@ -272,12 +203,10 @@ def draw_flow_field(model, sigma, delta, window_size=2.5, grid_points=50,
     ys = np.linspace(-window_size, window_size, grid_points)
     X, Y = np.meshgrid(xs, ys)
     clean_grid = np.stack([X, Y], axis=-1)
-    clean_flat = clean_grid.reshape(-1, 2)  # (grid_points^2, 2)
+    clean_flat = clean_grid.reshape(-1, 2)
 
     # Model prediction
-    pred_flat = model.y_delta(clean_flat, sigma, x_labels=None, delta=delta, cond=False)  # (grid_points^2, 2)
-    dists_to_y = np.sum((pred_flat[:, None] - model.data[None])**2, axis=2)  # (grid_points^2, N)
-    pred_error = np.min(dists_to_y, axis=1).reshape(grid_points, grid_points)  # (grid_points^2,)
+    pred_flat = model.y_delta(clean_flat, sigma, x_labels=None, delta=delta, cond=False)
     displacements = pred_flat - clean_flat
     magnitudes = np.linalg.norm(displacements, axis=1)
 
@@ -314,8 +243,6 @@ def draw_flow_field(model, sigma, delta, window_size=2.5, grid_points=50,
     if show_bg:
         plt.imshow(M, extent=(-window_size, window_size, -window_size, window_size),
                    origin='lower', cmap=cmap, alpha=0.2, zorder=0)  # cmap='Greys'
-        # plt.imshow(pred_error, extent=(-window_size, window_size, -window_size, window_size),
-        #            origin='lower', cmap=cmap, alpha=0.2, zorder=0)  # cmap='Greys'
 
     # Quiver plot
     # width = 0.003 + 0.006 * (M / (M.max() + 1e-8))
@@ -485,43 +412,6 @@ def plot_generalization_gap(t_steps, all_errors, color_range, idx=None, cbar_tic
     plt.ylim(ylim)
 
 
-def frechet_stats(array):
-    """Compute mean and covariance matrix of array."""
-    mu = np.mean(array, axis=0)
-    cov = np.cov(array, rowvar=False)
-    return mu, cov
-
-
-def frechet_distance(mu_gen, cov_gen, mu_ref, cov_ref, eps=1e-6):
-    """
-    Compute Fréchet Distance between two point clouds.
-
-    Args:
-        X_gen: np.ndarray of shape [N, D]  (generated samples)
-        X_ref: np.ndarray of shape [M, D]  (reference samples, train or val)
-        eps: small jitter for numerical stability
-
-    Returns:
-        fd: scalar Fréchet distance
-    """
-    # Stabilize
-    cov_gen += eps * np.eye(cov_gen.shape[0])
-    cov_ref += eps * np.eye(cov_ref.shape[0])
-
-    # Mean term
-    mean_diff = mu_gen - mu_ref
-    mean_term = mean_diff @ mean_diff
-
-    # Covariance term
-    covmean = sqrtm(cov_gen @ cov_ref)
-    if np.iscomplexobj(covmean):
-        covmean = covmean.real
-
-    cov_term = np.trace(cov_gen + cov_ref - 2 * covmean)
-
-    return mean_term, cov_term
-
-
 # Helper functions just for the toy_model.ipynb notebook
 # ----------------------------------------
 
@@ -627,33 +517,3 @@ def gen_gap_plot(t_steps, all_errors, color_range, cbar_ticks, ylim, fmt=None, c
         plt.savefig(save_as, dpi=200, bbox_inches="tight")
     plt.show()
     plt.close()
-
-
-def plot_cov_ellipse(pos, cov, nstd=1, ax=None, **kwargs):
-    """Plots an ellipse representing the covariance matrix (cov) at position (pos)."""
-    if ax is None:
-        ax = plt.gca()
-
-    # Eigenvalues and eigenvectors
-    vals, vecs = np.linalg.eigh(cov)
-    # Sort eigenvalues to get major axis
-    order = vals.argsort()[::-1]
-    vals, vecs = vals[order], vecs[:, order]
-
-    # Calculate angle and dimensions
-    theta = np.degrees(np.arctan2(*vecs[:, 0][::-1]))
-    # Width and height are 2 * nstd * sqrt(eigenvalues)
-    width, height = 2 * nstd * np.sqrt(vals)
-
-    ell = Ellipse(xy=pos, width=width, height=height, angle=theta, **kwargs)
-    ell.set_facecolor('none')  # Transparent fill
-
-
-
-
-
-
-
-
-
-

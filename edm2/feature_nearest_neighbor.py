@@ -7,6 +7,7 @@ from generalization_gap_exps import load_data, load_snaps
 from frechet_utils import get_detector
 from torch_utils import distributed as dist
 from tqdm import tqdm
+from project_config import PROJECT_DIR
 
 
 def get_sample_path(dataset: str, model_size: str, snap: int, probe_type: str, sigma: str) -> str:
@@ -15,14 +16,14 @@ def get_sample_path(dataset: str, model_size: str, snap: int, probe_type: str, s
     probe_type ∈ {'xr_train', 'xr_val', 'xt'}.
     """
     if probe_type == 'xr_train':
-        return f"/home/shared/generative_models/diffusion_overfit/data/loss_analysis/{dataset}/edm2-{model_size}/train_data/samples-{snap}-0.100/{sigma}/"
+        return f"{PROJECT_DIR}/data/loss_analysis/{dataset}/edm2-{model_size}/train_data/samples-{snap}-0.100/{sigma}/"
     elif probe_type == 'xr_val':
-        return f"/home/shared/generative_models/diffusion_overfit/data/loss_analysis/{dataset}/edm2-{model_size}/val_data/samples-{snap}-0.100/{sigma}/"
+        return f"{PROJECT_DIR}/data/loss_analysis/{dataset}/edm2-{model_size}/val_data/samples-{snap}-0.100/{sigma}/"
     elif 'xt' in probe_type:
         if not 'stop' in probe_type:
-            return f"/home/shared/generative_models/diffusion_overfit/fd_analysis/{dataset}/gen/uniform/edm2/{model_size}/{snap}/none/samples/"
+            return f"{PROJECT_DIR}/fd_analysis/{dataset}/gen/uniform/edm2/{model_size}/{snap}/none/samples/"
         else:
-            return f"/home/shared/generative_models/diffusion_overfit/fd_analysis/{dataset}/gen/uniform/edm2/{model_size}/{snap}/none/{probe_type.split('_')[-1]}/samples/"
+            return f"{PROJECT_DIR}/fd_analysis/{dataset}/gen/uniform/edm2/{model_size}/{snap}/none/{probe_type.split('_')[-1]}/samples/"
     else:
         raise ValueError(f"Invalid probe_type: {probe_type}")
 
@@ -32,12 +33,12 @@ def get_reference_path(dataset: str, split: str) -> str:
     Return a path for the reference set.
     split ∈ {'train', 'val'}
     """
-    return f"/home/shared/generative_models/diffusion_overfit/fd_analysis/{dataset}/{split}/uniform/subsamples_50000_01/samples/"
+    return f"{PROJECT_DIR}/fd_analysis/{dataset}/{split}/uniform/subsamples_50000_01/samples/"
 
 
 def get_ref_features_cache_path(dataset: str, split: str) -> str:
     """Return a .pt path for caching reference features."""
-    return f"/home/shared/generative_models/diffusion_overfit/fd_analysis/{dataset}/{split}/uniform/subsamples_50000_01/feats.pt"
+    return f"{PROJECT_DIR}/fd_analysis/{dataset}/{split}/uniform/subsamples_50000_01/feats.pt"
 
 
 def get_output_path(dataset: str, model_size: str, snap: int, probe_type: str, sigma: str, f_extractor: str) -> str:
@@ -50,7 +51,7 @@ def get_output_path(dataset: str, model_size: str, snap: int, probe_type: str, s
     # elif f_extractor == 'fid':
     #     f_str = 'incp'
     f_str = f_extractor  # todo delete and rerun
-    return f"/home/shared/generative_models/diffusion_overfit/data/fnn_analysis/{dataset}/edm2-{model_size}/{snap}-0.100/{sigma}/{probe_type}/cos-sims-{f_str   }.npy"
+    return f"{PROJECT_DIR}/data/fnn_analysis/{dataset}/edm2-{model_size}/{snap}-0.100/{sigma}/{probe_type}/cos-sims-{f_str   }.npy"
 
 # ── internals ─────────────────────────────────────────────────────────────────
 

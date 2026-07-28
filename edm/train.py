@@ -15,10 +15,11 @@ import json
 import click
 import torch
 import dnnlib
-# import wandb
+import wandb
 
 from torch_utils import distributed as dist
 from training import training_loop
+from project_config import DATASETS_DIR
 
 import warnings
 warnings.filterwarnings('ignore', 'Grad strides do not match bucket view strides') # False warning printed by PyTorch 1.12.
@@ -33,8 +34,7 @@ def parse_tuple(t: tuple[str, ...]):
 
 
 def wandb_init(project, group, log, runname):
-    if os.access("/home/tikai103", os.R_OK):
-        os.environ["WANDB_API_KEY"] = "a9efb3b6cddc090dbf125d4c5d0dff12b178eb36"
+    os.environ["WANDB_API_KEY"] = ...
     wandb.init(project=project, entity="hhu-mmbs", group=group)
     wandb.run.name = runname
     wandb.config.update(log)
@@ -43,43 +43,43 @@ def wandb_init(project, group, log, runname):
 def get_dataset_path(dataset):
     # get dataset path
     if dataset == 'cifar10':
-        dataset_folder = '/home/shared/DataSets/cifar-10'
+        dataset_folder = f'{DATASETS_DIR}/cifar-10'
         dataset_path = f'{dataset_folder}/cifar10-32x32.zip'
         n_train = 50000
     elif dataset == 'cifar100':
-        dataset_folder = '/home/shared/DataSets/cifar-100'
+        dataset_folder = f'{DATASETS_DIR}/cifar-100'
         dataset_path = f'{dataset_folder}/cifar100-32x32.zip'
         n_train = 50000
     elif dataset == 'ffhq':
-        dataset_folder = '/home/shared/DataSets/vision_benchmarks/FFHQ-i'
+        dataset_folder = f'{DATASETS_DIR}/vision_benchmarks/FFHQ-i'
         dataset_path = f'{dataset_folder}/ffhq-64x64.zip'
         n_train = 70000
     elif dataset == 'imagenet':
-        dataset_folder = '/home/shared/DataSets/vision_benchmarks/IN_64x64_karras'
+        dataset_folder = f'{DATASETS_DIR}/vision_benchmarks/IN_64x64_karras'
         dataset_path = f'{dataset_folder}/imagenet-64x64.zip'
         n_train = 1281167
     elif dataset == 'mnist':
-        dataset_folder = '/home/shared/DataSets/MNIST'
+        dataset_folder = f'{DATASETS_DIR}/MNIST'
         dataset_path = f'{dataset_folder}/mnist-32x32.zip'
         n_train = 60000
     elif dataset == 'afhqv2':
-        dataset_folder = '/home/shared/DataSets/vision_benchmarks/AFHQ-v2'
+        dataset_folder = f'{DATASETS_DIR}/vision_benchmarks/AFHQ-v2'
         dataset_path = f'{dataset_folder}/afhqv2-64x64.zip'
         n_train = 15803
     elif dataset == 'cifar100-coarse':
-        dataset_folder = '/home/shared/DataSets/cifar-100'
+        dataset_folder = f'{DATASETS_DIR}/cifar-100'
         dataset_path = f'{dataset_folder}/cifar100-coarse-32x32.zip'
         n_train = 50000
     elif dataset == 'cifar10_incp_804_512':
-        dataset_folder = '/home/shared/DataSets/cifar-10'
+        dataset_folder = f'{DATASETS_DIR}/cifar-10'
         dataset_path = f'{dataset_folder}/cifar10-32x32_incp_804_512.zip'
         n_train = 44803
     elif dataset == 'cifar10_dino_804_512':
-        dataset_folder = '/home/shared/DataSets/cifar-10'
+        dataset_folder = f'{DATASETS_DIR}/cifar-10'
         dataset_path = f'{dataset_folder}/cifar10-32x32_dino_804_512.zip'
         n_train = 39195
     elif dataset == 'cifar10_incp_dino_804_512':
-        dataset_folder = '/home/shared/DataSets/cifar-10'
+        dataset_folder = f'{DATASETS_DIR}/cifar-10'
         dataset_path = f'{dataset_folder}/cifar10-32x32_incp_dino_804_512.zip'
         n_train = 48085
     else:

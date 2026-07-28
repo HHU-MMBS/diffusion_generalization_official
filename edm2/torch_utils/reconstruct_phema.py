@@ -253,5 +253,3 @@ if __name__ == "__main__":
     cmdline()
 
 #----------------------------------------------------------------------------
-
-# rclone copy --progress --http-url https://nvlabs-fi-cdn.nvidia.com/edm2 :http:raw-snapshots/edm2-img512-xs-uncond/ /home/shared/generative_models/inductive_bias/edm2/IN64/models/

@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.ticker as ticker
 
 from matplotlib.collections import LineCollection
+from project_config import PROJECT_DIR
 
 
 def mean_std_plot(t_steps, mean, std, label, color, scaling=1.):
@@ -158,7 +159,7 @@ def get_residuals(dataset, models, ema=False):
 
         # Step 2: Locate training and validation file paths
         for mode, path_list in [('train', train_paths[model]), ('val', val_paths[model])]:
-            data_folder = f'/home/shared/generative_models/diffusion_overfit/data/loss_analysis_l2_only/{dataset}/{model}/{mode}_data'  # todo: change back to regular loss_analysis folder
+            data_folder = f'{PROJECT_DIR}/data/loss_analysis/{dataset}/{model}/{mode}_data'
             if os.path.exists(data_folder):  # Ensure the data folder exists
                 for file_path in sorted([os.path.join(data_folder, f) for f in os.listdir(data_folder) if 'data' in f]):
                     if not ema and '-0.' in file_path:  # Exclude EMA files if `ema` set to False

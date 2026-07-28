@@ -8,6 +8,7 @@ from torch.func import jacrev, vmap
 from torch_utils import distributed as dist
 from generate_images import StackedRandomGenerator, parse_int_list
 from exp_utils import load_data, load_models, load_snaps
+from project_config import PROJECT_DIR
 
 
 
@@ -65,8 +66,6 @@ def long_range_corr(dataset, res, model_type, device='cuda'):
         cbar = plt.colorbar(ticks=np.linspace(0, 1, 5), fraction=0.046, pad=0.04)
         cbar.ax.set_yticklabels(np.round(np.linspace(plot_min, plot_max, 5), 4))  # vertically oriented colorbar
 
-        path = f'/home/tikai103/inductive_bias_diffusion/edm2-long_range_corr_avg-{sigma_int}.png'
-        plt.savefig(path, dpi=200, bbox_inches='tight')
         # dist.print0(f'Saved to {path}.')
         plt.close()
 
@@ -210,12 +209,11 @@ def long_range_gradients(split='train', device='cuda'):
             # plt.subplot(1, 2, 2)
             # plt.imshow(grad.abs().cpu().numpy())
             # plt.colorbar(fraction=0.046, pad=0.04)
-            # plt.savefig(f'/home/tikai103/diffusion_overfit/plotsgradients/edm2-long_range_gradients_{sigma[0].item():.1e}.png', dpi=200, bbox_inches='tight')
             # plt.close()
 
             # Save results
             assert corr_score.shape == (C, H, W), f"Shape mismatch. {corr_score.shape}, must be {(C, H, W)}"
-            save_path = (f"{proj_folder}/data/gradients/in{res}/edm2-{model_size}/"
+            save_path = (f"{PROJECT_DIR}/data/gradients/in{res}/edm2-{model_size}/"
                          f"corr_scores_{split}_{img_idx[b]}_s{sigmas[b].item():.1e}.pt")
             if not os.path.exists(os.path.dirname(save_path)):
                 os.makedirs(os.path.dirname(save_path))
@@ -341,7 +339,7 @@ def get_attention_map(dataset, res, model_type, model_size, device='cuda'):
         _, qk_maps = unet_foward(net.unet, x, sigma, labels)
         all_qk_maps[sigma[0].item()] = qk_maps
 
-    save_path = f"{proj_folder}/data/loss_analysis/in{res}/edm2-{model_size}/qk-maps.pt"
+    save_path = f"{PROJECT_DIR}/data/loss_analysis/in{res}/edm2-{model_size}/qk-maps.pt"
     torch.save(all_qk_maps, save_path)
     dist.print0(f'Saved to {save_path}')
 
@@ -352,7 +350,6 @@ if __name__ == "__main__":
     dist.init()
     rank, world_size = dist.get_rank(), dist.get_world_size()
     sigma_data = 0.5
-    proj_folder = '/home/shared/generative_models/diffusion_overfit'
 
     # EDM sampler setup
     num_steps, rho = 32, 7

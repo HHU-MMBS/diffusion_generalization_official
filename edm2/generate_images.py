@@ -410,8 +410,7 @@ def cmdline(preset, metrics, ref_path, use_wandb, wandb_group, wandb_runname, **
     all_arguments = click.get_current_context().params
     all_arguments["seeds"] = len(opts.seeds)
     if use_wandb and dist.get_rank() == 0:
-        if os.access("/home/tikai103", os.R_OK):
-            os.environ["WANDB_API_KEY"] = "a9efb3b6cddc090dbf125d4c5d0dff12b178eb36"
+        os.environ["WANDB_API_KEY"] = ...
         wandb.init(project="Inductive-bias", entity="hhu-mmbs", group=wandb_group)
         wandb.run.name = wandb_runname
         wandb.config.update(all_arguments)

@@ -53,15 +53,15 @@ fi
 # Set the other parameters here
 wd=0
 #wd=2e-3
-#outdir="/home/shared/generative_models/inductive_bias/edm/${dataset}/training/uncond-wd${wd}-ft"  # todo always double-check this
+#outdir="/home/shared/generative_models/inductive_bias/edm/${dataset}/training/uncond-wd${wd}-ft"
 #num_blocks=4
 #cres=1,1,1
-#outdir="/home/shared/generative_models/inductive_bias/edm/${dataset}/training/uncond-cres${cres}-blocks${num_blocks}"  # todo always double-check this
+#outdir="/home/shared/generative_models/inductive_bias/edm/${dataset}/training/uncond-cres${cres}-blocks${num_blocks}"
 
 #ra=0.5  # range alpha
-#outdir="/home/shared/generative_models/inductive_bias/ours/${dataset}/training/cond-range_weight"  # todo always double-check this
+#outdir="/home/shared/generative_models/inductive_bias/ours/${dataset}/training/cond-range_weight"
 
-outdir="/home/shared/generative_models/inductive_bias/${loss_fn}/${dataset}/training/cond-default_new"  # todo always double-check this
+outdir="/home/shared/generative_models/inductive_bias/${loss_fn}/${dataset}/training/cond-default_new"
 
 echo "Running ${dataset} ${duration}M cond=${cond} loss=${loss_fn} cres=${cres} blocks=${num_blocks} wd=${wd}"
 while true; do

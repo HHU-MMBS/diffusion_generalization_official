@@ -5,6 +5,7 @@ import pickle
 
 from torch_utils import distributed as dist
 from torch_utils import misc
+from project_config import DATASETS_DIR
 
 
 def load_data(dataset, model_type, split='train', get_loader=True, get_iter=True, batch_gpu=64, pseudo_label_path=None, max_size=None, verbose=True):
@@ -16,13 +17,13 @@ def load_data(dataset, model_type, split='train', get_loader=True, get_iter=True
             dataset_str = 'IN_512x512_karras/img512'
         elif dataset == 'in512':
             dataset_str = 'IN_512x512_karras/img512-sd'
-        dataset_path = f"/home/shared/DataSets/vision_benchmarks/{dataset_str}{'-val' if split == 'val' else ''}.zip"
+        dataset_path = f"{DATASETS_DIR}/vision_benchmarks/{dataset_str}{'-val' if split == 'val' else ''}.zip"
         if dataset_str is None:
             if verbose:
                 dist.print0(f"Warning: Interpreting 'dataset' arg as full dataset path.")
             dataset_path = dataset
     elif 'cifar' in dataset:
-        dataset_path = f"/home/shared/DataSets/{dataset.replace('cifar', 'cifar-')}/{dataset}-32x32{'-val' if split == 'val' else ''}.zip"
+        dataset_path = f"{DATASETS_DIR}/{dataset.replace('cifar', 'cifar-')}/{dataset}-32x32{'-val' if split == 'val' else ''}.zip"
     else:
         if verbose:
             dist.print0(f"Warning: Interpreting 'dataset' arg as full dataset path.")
@@ -30,7 +31,7 @@ def load_data(dataset, model_type, split='train', get_loader=True, get_iter=True
 
     if 'kmeans' in model_type:  # model trained with kmeans pseudo labels (https://github.com/HHU-MMBS/cedm-official-wavc2025)
         n_clusters = int(model_type.split('-')[-1])
-        pseudo_label_path = f"/home/shared/generative_models/cluster_ids/{dataset}/kmeans-dino_vitb16/clusters-{n_clusters}/cluster_ids{'_test' if split == 'val' else '_train'}.pt"
+        pseudo_label_path = ...
         if verbose:
             dist.print0(f'Loading {split if split is not None else ""} dataset from "{dataset_path}" with pseudo labels from "{pseudo_label_path}"...')
     else:
@@ -102,24 +103,23 @@ def load_snaps(which_snaps, dataset, model_type, res, model_size=None, ema='0.10
     assert type(which_snaps) == int or which_snaps == 'all', "Invalid which_snaps."
 
     if model_type == 'edm2':
-        network_folder = f"/home/shared/generative_models/EDM2/IN{res}/models/edm2-img{res}-{model_size}/"
-        # network_folder = f"https://nvlabs-fi-cdn.nvidia.com/edm2/raw-snapshots/edm2-img{res}-{model_size}/"   # Online from NVIDIA
+        network_folder = f"https://nvlabs-fi-cdn.nvidia.com/edm2/raw-snapshots/edm2-img{res}-{model_size}/"   # Online from NVIDIA
         all_snaps = sorted([os.path.join(network_folder, s) for s in os.listdir(network_folder) if ('edm2-' in s and ema in s)])
     elif 'edm' in model_type or ('P_' in model_type) or 'theory' in model_type or 'ours' in model_type:
         if 'ours' in model_type:
             run_folder = f"00{model_type.replace('ours-', '')}-{dataset}-32x32-cond-ddpmpp-ours-gpu0-batch1024-fp16"
-            network_folder = f"/home/shared/generative_models/training/edm/{dataset}/sigma_eps_tuning/gamma_6/{run_folder}"
+            network_folder = ...
         elif 'kmeans' in model_type:
             n_clusters = model_type.split('-')[-1]
-            network_folder = f"/home/shared/generative_models/training/edm/{dataset}/self-conditioning/kmeans-{n_clusters}/"
+            network_folder = ...
         elif model_type == 'edm-uncond':
-            network_folder = f"/home/shared/generative_models/inductive_bias/edm/{dataset}/training/uncond-default/"
+            network_folder = ...
         else:
             if 'theory' in model_type:
                 run_folder = f"cond-theory-loss"
             else:
                 run_folder = f"cond-default{model_type.replace('edm', '')}"
-            network_folder = f"/home/shared/generative_models/inductive_bias/edm/{dataset}/training/{run_folder}/"
+            network_folder = ...
         all_snaps = sorted([os.path.join(network_folder, s) for s in os.listdir(network_folder) if ('snapshot' in s)])[
                     1:]  # Exclude 0M
     else:

@@ -77,11 +77,11 @@ for dataset in 'cifar10' ; do  # cifar10, cifar100, ffhq, imagenet
         fi
 
         if [ "$kmeans" != 0 ]; then
-          outdir="/home/shared/generative_models/diffusion_overfit/fd_analysis/${dataset}/gen/uniform/edm-kmeans${kmeans}/${snap_pos}/${method}/samples/"
+          outdir="${top_folder}/fd_analysis/${dataset}/gen/uniform/edm-kmeans${kmeans}/${snap_pos}/${method}/samples/"
         else
-          outdir="/home/shared/generative_models/diffusion_overfit/fd_analysis/${dataset}/gen/uniform/edm/${snap_pos}/${method}/samples/"
+          outdir="${top_folder}/fd_analysis/${dataset}/gen/uniform/edm/${snap_pos}/${method}/samples/"
         fi
-        outdir="/home/shared/generative_models/diffusion_overfit/fd_analysis/delete2/"
+        outdir="${top_folder}/fd_analysis/delete2/"
 
         echo "Running: $dataset $model $method $cfg_method $cfg_weight $snap_pos $seeds"
         while true; do
@@ -118,5 +118,3 @@ for dataset in 'cifar10' ; do  # cifar10, cifar100, ffhq, imagenet
     done  # Close the snap_pos loop
   done  # Close the method loop
 done  # Close the dataset loop
-
-# python frechet_utils.py ref --data=/home/shared/DataSets/vision_benchmarks/FFHQ-i/ffhq-64x64.zip --dest=/home/shared/DataSets/vision_benchmarks/FFHQ-i/ffhq64-refs.pkl --batch=256

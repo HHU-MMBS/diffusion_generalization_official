@@ -24,11 +24,12 @@ from pathlib import Path
 from tqdm import tqdm
 from torch_utils import distributed as dist
 from torch_utils.frechet_utils import calc_python, parse_metric_list
+from project_config import DATASETS_DIR
 
 
 def load_training_images(idx, use_tqdm=False):
     images = []
-    with zipfile.ZipFile('/home/shared/DataSets/cifar-10/cifar10-32x32.zip') as z:
+    with zipfile.ZipFile(f'{DATASETS_DIR}/cifar-10/cifar10-32x32.zip') as z:
         for i in tqdm(idx, disable=not use_tqdm):
             with z.open(f'{int(i / 1000):05d}/img{i:08d}.png', 'r') as f:
                 image = np.array(PIL.Image.open(f))
