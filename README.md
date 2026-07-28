@@ -3,10 +3,6 @@
 
 # Diffusion Models Memorize in Training -- and Generalize in Inference
 
-[Tim Kaiser](https://www.linkedin.com/in/tim-kaiser-86a483265/) and [Prof. Dr. Markus Kollmann](https://www.mathmodeling.hhu.de/unser-team)
-
-**[Mathematical modeling of biological systems lab (MMBS), Heinrich Heine University of Dusseldorf](https://github.com/HHU-MMBS/)**
-
   <!-- [![arXiv](https://img.shields.io/badge/BMVC-2025-blue)](https://proceedings.bmvc2023.org/297/)  --> 
   
   [![arXiv](https://img.shields.io/badge/arXiv-2411.10257-red)](https://arxiv.org/abs/2603.13419v2)  
@@ -91,12 +87,3 @@ datasets according to the [EDM](https://github.com/nvlabs/edm) instructions.
 We adapted the codebase of [EDM](https://github.com/nvlabs/edm) and [EDM2](https://github.com/NVlabs/edm2) for our
 experiments, following their licence (`edm2/LICENCE.txt`), namely Attribution-NonCommercial-ShareAlike 4.0 International.
 
-## Citation
-```bibtex
-@misc{kaiser2026diffusionmodelsmemorizetraining,
-      title={Diffusion Models Memorize in Training -- and Generalize in Inference}, 
-      author={Tim Kaiser and Markus Kollmann},
-      journal={arXiv preprint arXiv:2603.13419},
-      year={2026},
-}
-```
